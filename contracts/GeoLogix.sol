@@ -2,8 +2,6 @@
 
 pragma solidity ^0.8.9;
 
-import "./trigonometry.sol";
-
 contract GeoLogix
 {
     //Set of States
@@ -50,15 +48,8 @@ contract GeoLogix
     function IngestTelemetry(int _lat, int _lng, uint _distance, uint _timestamp) public
     {
         // if the state is already completed, no more telemetry can be ingested
-        if ( state == StateType.Completed )
-        {
-            revert();
-        }
-
-        if (device != msg.sender)
-        {
-            revert();
-        }
+        require(state != StateType.Completed,"State already completed" );
+        require(device == msg.sender,"Account not from Device");
 
         state = StateType.InTransit;
 
@@ -70,7 +61,7 @@ contract GeoLogix
             Checkpoint memory checkpoint = checkpoints[uint256(index)];
             // check if the distance is greater than the distance of the checkpoint outlined
             if( _distance > checkpoint.distance){
-                revert();
+                nonCompliance.push(Checkpoint(_lat, _lng,_distance, _timestamp));
             }
 
             compliance.push(Checkpoint(_lat, _lng,_distance, _timestamp));
@@ -93,12 +84,9 @@ contract GeoLogix
 
 
     function complete() public payable onlyOwner{
+        
+       require(state != StateType.Completed,"State already completed");
        
-        if ( state == StateType.Completed ){
-            // no need to transfer again
-            revert();
-        }
-
         // calculate how many compliance are there, and 
         // if >= 75% transfer all the balance to driver,
         // >=50% transfer 3 ether to driver,
