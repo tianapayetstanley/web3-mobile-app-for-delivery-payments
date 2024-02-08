@@ -25,8 +25,8 @@ contract GeoLogix
 
 
     constructor(address _device, address _company, address _driver) payable {
-        // Ensure that at least 5 Ether is sent to the contract upon creation
-        require(msg.value >= 5 ether, "Minimum 5 Ether required");
+        // Ensure that at least 0.005 Ether is sent to the contract upon creation
+        require(msg.value >= 0.005 ether, "Minimum 0.005 Ether required");
         company = _company;
         device = _device;
         driver = _driver; 
@@ -89,14 +89,14 @@ contract GeoLogix
        
         // calculate how many compliance are there, and 
         // if >= 75% transfer all the balance to driver,
-        // >=50% transfer 3 ether to driver,
+        // >=50% transfer 0.003 ether to driver,
         // <50% transfer the balance to the owner
         if(compliance.length >= checkpoints.length *3/4){
             // transfer all balance
             payable(driver).transfer(address(this).balance);
         }else if(compliance.length >= checkpoints.length * 1/2){
-            // transfer 3 ether
-            payable(driver).transfer(3 ether);
+            // transfer 0.003 ether
+            payable(driver).transfer(0.003 ether);
         }else{
             // transfer balance to company from the contract
             payable(company).transfer(address(this).balance);
