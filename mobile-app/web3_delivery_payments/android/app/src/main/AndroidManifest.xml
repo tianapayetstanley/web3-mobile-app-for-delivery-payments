@@ -1,9 +1,22 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.web3_delivery_payments">
+
+    <!-- START: geolocator configuration -->
+     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- END: geolocator configuration -->
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+
    <application
         android:label="web3_delivery_payments"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- START: google maps flutter configuration -->
+         <meta-data android:name="com.google.android.geo.API_KEY"
+               android:value="YOUR KEY HERE"/>
+        <!-- END: google maps flutter configuration -->
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -12,6 +25,7 @@
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
+
             <!-- Specifies an Android theme to apply to this Activity as soon as
                  the Android process has started. This theme is visible to the user
                  while the Flutter UI initializes. After that, this theme continues
