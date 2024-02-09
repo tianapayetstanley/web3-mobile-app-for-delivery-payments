@@ -15,3 +15,5 @@ node_modules
 /coverage
 /coverage.json
 .fvm
+AndroidManifest.xml
+mobile-app/web3_delivery_payments/android/app/src/main/AndroidManifest.xml
