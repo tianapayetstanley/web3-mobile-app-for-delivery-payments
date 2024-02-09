@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:web3_delivery_payments/features/home/view/home_page.dart';
 import 'package:web3_delivery_payments/features/login/view/login_page.dart';
+import 'package:web3_delivery_payments/features/navigation/view/navigation_page.dart';
 import 'package:web3_delivery_payments/features/splash/view/splash_page.dart';
 
 class MyRouter {
   static String splashRouteName = '/splash';
-  static String homeRouteName = '/';
   static String loginRouteName = '/login';
+  static String homeRouteName = '/';
+  static String navigationRouteName = 'navigation';
 
   static GoRouter router = GoRouter(
     debugLogDiagnostics: kDebugMode,
@@ -37,6 +39,13 @@ class MyRouter {
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
               FadeTransition(opacity: animation, child: child),
         ),
+        routes: [
+          GoRoute(
+            name: navigationRouteName,
+            path: 'navigation',
+            builder: (context, state) => const NavigationPage(),
+          )
+        ],
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
