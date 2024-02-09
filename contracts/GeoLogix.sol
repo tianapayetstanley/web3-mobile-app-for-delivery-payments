@@ -35,7 +35,7 @@ contract GeoLogix
 
     // modifier that checks the current user calling the contract function is the owner
     modifier onlyOwner(){
-        require(msg.sender == company);
+        require(msg.sender == company, "Account must be company/owner");
         _;
     }
 
@@ -45,8 +45,7 @@ contract GeoLogix
     }
  
 
-    function IngestTelemetry(int _lat, int _lng, uint _distance, uint _timestamp) public
-    {
+    function IngestTelemetry(int _lat, int _lng, uint _distance, uint _timestamp) public{
         // if the state is already completed, no more telemetry can be ingested
         require(state != StateType.Completed,"State already completed" );
         require(device == msg.sender,"Account not from Device");
@@ -62,9 +61,9 @@ contract GeoLogix
             // check if the distance is greater than the distance of the checkpoint outlined
             if( _distance > checkpoint.distance){
                 nonCompliance.push(Checkpoint(_lat, _lng,_distance, _timestamp));
-            }
-
+            }else{
             compliance.push(Checkpoint(_lat, _lng,_distance, _timestamp));
+            }
         }
 
        
@@ -84,7 +83,7 @@ contract GeoLogix
 
 
     function complete() public payable onlyOwner{
-        
+
        require(state != StateType.Completed,"State already completed");
        
         // calculate how many compliance are there, and 
