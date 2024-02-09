@@ -13,6 +13,7 @@ contract GeoLogix
     address public  driver;
 
     struct Checkpoint{
+        uint id;
         int lat;
         int lng;
         uint distance;
@@ -39,13 +40,13 @@ contract GeoLogix
         _;
     }
 
-    function addCheckpoint(int _lat, int _lng, uint _distance, uint _timestamp) public onlyOwner{
-        Checkpoint memory checkpoint = Checkpoint(_lat, _lng,_distance, _timestamp);
+    function addCheckpoint(uint _id, int _lat, int _lng, uint _distance, uint _timestamp) public onlyOwner{
+        Checkpoint memory checkpoint = Checkpoint(_id,_lat, _lng,_distance, _timestamp);
         checkpoints.push(checkpoint);
     }
  
 
-    function IngestTelemetry(int _lat, int _lng, uint _distance, uint _timestamp) public{
+    function IngestTelemetry(uint _id,int _lat, int _lng, uint _distance, uint _timestamp) public{
         // if the state is already completed, no more telemetry can be ingested
         require(state != StateType.Completed,"State already completed" );
         require(device == msg.sender,"Account not from Device");
@@ -53,27 +54,27 @@ contract GeoLogix
         state = StateType.InTransit;
 
         // find the index of a checkpoint given a timestamp and return an index
-         int index = findACheckpointGivenATimestamp(_timestamp);
+         int index = findACheckpointGivenAnId(_id);
         if(index == -1){
-            nonCompliance.push(Checkpoint(_lat, _lng,_distance, _timestamp));
+            nonCompliance.push(Checkpoint(_id,_lat, _lng,_distance, _timestamp));
         }else{
             Checkpoint memory checkpoint = checkpoints[uint256(index)];
-            // check if the distance is greater than the distance of the checkpoint outlined
-            if( _distance > checkpoint.distance){
-                nonCompliance.push(Checkpoint(_lat, _lng,_distance, _timestamp));
+            // check if the distance is greater than the distance of the checkpoint outlined or the timestamp is 5 minutes(300,000 milliseconds) or more after the timestamp of the checkpoint
+            if( _distance > checkpoint.distance ||  
+            (_timestamp > checkpoint.timestamp + 300000)){
+                nonCompliance.push(Checkpoint(_id,_lat, _lng,_distance, _timestamp));
             }else{
-            compliance.push(Checkpoint(_lat, _lng,_distance, _timestamp));
+            compliance.push(Checkpoint(_id,_lat, _lng,_distance, _timestamp));
             }
         }
 
        
     }
 
-    function findACheckpointGivenATimestamp(uint _timestamp) internal view returns (int){
+    function findACheckpointGivenAnId(uint _id) internal view returns (int){
         for (uint256 i = 0; i < checkpoints.length; i++) {
             Checkpoint memory checkpoint = checkpoints[i];
-            // if the timestamp is the same or within a 5 minute window
-            if ((_timestamp == checkpoint.timestamp) || (_timestamp > checkpoint.timestamp  && _timestamp < checkpoint.timestamp + 300)){
+            if (_id == checkpoint.id){
                 return int(i);
             }
         } 
@@ -96,6 +97,7 @@ contract GeoLogix
         }else if(compliance.length >= checkpoints.length * 1/2){
             // transfer 0.003 ether
             payable(driver).transfer(0.003 ether);
+            payable(company).transfer(address(this).balance - 0.003 ether);
         }else{
             // transfer balance to company from the contract
             payable(company).transfer(address(this).balance);
