@@ -20,9 +20,17 @@ contract GeoLogix
         uint timestamp;
     }
 
-   Checkpoint[] public checkpoints;
-   Checkpoint[] public compliance;
-   Checkpoint[] public nonCompliance;
+   
+
+   mapping(uint => Checkpoint)  checkpointsMap;
+   mapping(uint => Checkpoint)  compliancesMap;
+   mapping(uint => Checkpoint)  nonCompliancesMap;
+
+   uint[]  checkpointIds;
+   uint[]  complianceIds;
+   uint[]  nonComplianceIds;
+
+   uint  checkpointId = 0;
 
 
     constructor(address _device, address _company, address _driver) payable {
@@ -40,9 +48,23 @@ contract GeoLogix
         _;
     }
 
-    function addCheckpoint(uint _id, int _lat, int _lng, uint _distance, uint _timestamp) public onlyOwner{
-        Checkpoint memory checkpoint = Checkpoint(_id,_lat, _lng,_distance, _timestamp);
-        checkpoints.push(checkpoint);
+    function addCheckpoint( int _lat, int _lng, uint _distance, uint _timestamp) public onlyOwner{
+        Checkpoint memory checkpoint = Checkpoint(checkpointId,_lat, _lng,_distance, _timestamp);
+        checkpointsMap[checkpointId] = checkpoint;
+        checkpointIds.push(checkpointId);
+        checkpointId++;
+    }
+
+    function getCheckpointIds() public view returns (uint[] memory){
+        return checkpointIds;
+    }
+
+    function getComplianceIds() public view returns (uint[] memory){
+        return complianceIds;
+    }
+
+    function getNonComplianceIds() public view returns (uint[] memory){
+        return nonComplianceIds;
     }
  
 
@@ -54,31 +76,21 @@ contract GeoLogix
         state = StateType.InTransit;
 
         // find the index of a checkpoint given a timestamp and return an index
-         int index = findACheckpointGivenAnId(_id);
-        if(index == -1){
-            nonCompliance.push(Checkpoint(_id,_lat, _lng,_distance, _timestamp));
-        }else{
-            Checkpoint memory checkpoint = checkpoints[uint256(index)];
-            // check if the distance is greater than the distance of the checkpoint outlined or the timestamp is 5 minutes(300,000 milliseconds) or more after the timestamp of the checkpoint
-            if( _distance > checkpoint.distance ||  
-            (_timestamp > checkpoint.timestamp + 300000)){
-                nonCompliance.push(Checkpoint(_id,_lat, _lng,_distance, _timestamp));
-            }else{
-            compliance.push(Checkpoint(_id,_lat, _lng,_distance, _timestamp));
-            }
-        }
-
+        Checkpoint memory checkpoint = findACheckpointGivenAnId(_id);
        
+        // check if the distance is greater than the distance of the checkpoint outlined or the timestamp is 5 minutes(300,000 milliseconds) or more after the timestamp of the checkpoint
+        if( _distance > checkpoint.distance ||  (_timestamp > checkpoint.timestamp + 300000)){
+            nonCompliancesMap[_id] = Checkpoint(_id,_lat, _lng,_distance, _timestamp);
+            nonComplianceIds.push(_id);
+        }else{
+            compliancesMap[_id] = Checkpoint(_id,_lat, _lng,_distance, _timestamp);
+            complianceIds.push(_id);
+        }
+        
     }
 
-    function findACheckpointGivenAnId(uint _id) internal view returns (int){
-        for (uint256 i = 0; i < checkpoints.length; i++) {
-            Checkpoint memory checkpoint = checkpoints[i];
-            if (_id == checkpoint.id){
-                return int(i);
-            }
-        } 
-        return -1;
+    function findACheckpointGivenAnId(uint _id) internal view returns (Checkpoint memory){
+        return checkpointsMap[_id];
     }
 
 
@@ -91,10 +103,10 @@ contract GeoLogix
         // if >= 75% transfer all the balance to driver,
         // >=50% transfer 0.003 ether to driver,
         // <50% transfer the balance to the owner
-        if(compliance.length >= checkpoints.length *3/4){
+        if(complianceIds.length >= checkpointIds.length *3/4){
             // transfer all balance
             payable(driver).transfer(address(this).balance);
-        }else if(compliance.length >= checkpoints.length * 1/2){
+        }else if(complianceIds.length >= checkpointIds.length * 1/2){
             // transfer 0.003 ether
             payable(driver).transfer(0.003 ether);
             payable(company).transfer(address(this).balance - 0.003 ether);
@@ -107,5 +119,26 @@ contract GeoLogix
         
     }
 
-    
+    // can be called by the company if its necessary to start from scratch
+    function resetEverything() public onlyOwner{
+        state = StateType.Created;
+        for (uint i = 0; i < checkpointIds.length; i++){
+            delete checkpointsMap[checkpointIds[i]];
+        }
+        for (uint i = 0; i < complianceIds.length; i++){
+            delete compliancesMap[complianceIds[i]];
+        }
+
+        for (uint i = 0; i < nonComplianceIds.length; i++){
+            delete nonCompliancesMap[nonComplianceIds[i]];
+        }
+
+        
+        delete  checkpointIds ;
+       delete complianceIds ;
+       delete nonComplianceIds ;
+       
+        checkpointId = 0;
+    }
+
 }
