@@ -34,10 +34,10 @@ class _SplashPageState extends State<SplashPage> {
             ],
           ),
         ),
-        child: const Center(
+        child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
+            children: const [
               Spacer(),
               Icon(
                 Icons.vpn_lock,

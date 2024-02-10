@@ -8,7 +8,7 @@ import 'package:web3_delivery_payments/features/splash/view/splash_page.dart';
 class MyRouter {
   static String splashRouteName = '/splash';
   static String homeRouteName = '/';
-  static String navigationRouteName = 'navigation';
+  static String navigationRouteName = '/navigation';
 
   static GoRouter router = GoRouter(
     debugLogDiagnostics: kDebugMode,
@@ -30,14 +30,12 @@ class MyRouter {
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
               FadeTransition(opacity: animation, child: child),
         ),
-        routes: [
-          GoRoute(
-            name: navigationRouteName,
-            path: 'navigation',
-            builder: (context, state) => const NavigationPage(),
-          )
-        ],
       ),
+      GoRoute(
+        name: navigationRouteName,
+        path: '/navigation',
+        builder: (context, state) => const NavigationPage(),
+      )
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(

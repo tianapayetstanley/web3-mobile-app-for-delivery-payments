@@ -21,16 +21,15 @@ contract GeoLogix
     }
 
    
+   mapping(uint => Checkpoint) public checkpointsMap;
+   mapping(uint => Checkpoint) public compliancesMap;
+   mapping(uint => Checkpoint) public nonCompliancesMap;
 
-   mapping(uint => Checkpoint)  checkpointsMap;
-   mapping(uint => Checkpoint)  compliancesMap;
-   mapping(uint => Checkpoint)  nonCompliancesMap;
+   uint[] checkpointIds;
+   uint[] complianceIds;
+   uint[] nonComplianceIds;
 
-   uint[]  checkpointIds;
-   uint[]  complianceIds;
-   uint[]  nonComplianceIds;
-
-   uint  checkpointId = 0;
+   uint public checkpointId = 0;
 
 
     constructor(address _device, address _company, address _driver) payable {
