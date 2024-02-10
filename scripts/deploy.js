@@ -7,21 +7,26 @@
 const hre = require("hardhat");
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  const company = "0x2C17bF990f33afcFdE985E19137A92B1C486D0e1";
+  const device = "0x7943984e2BA9Fe097286aED8D6c31f94FeC0800F";
+  const driver = "0x8a40840554c7972fF50208FA442B80f0b14Fc378";
 
-  const lockedAmount = hre.ethers.parseEther("0.001");
+  const paymentAmount = hre.ethers.parseEther("0.005");
 
-  const lock = await hre.ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
+  const contract = await hre.ethers.deployContract(
+    "GeoLogix",
+    [device, company, driver],
+    {
+      value: paymentAmount,
+    }
+  );
 
-  await lock.waitForDeployment();
+  await contract.waitForDeployment();
 
   console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
+    `Contract with ${ethers.formatEther(paymentAmount)}ETH is deployed to ${
+      contract.target
+    }`
   );
 }
 
