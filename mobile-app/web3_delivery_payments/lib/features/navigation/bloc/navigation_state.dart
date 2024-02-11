@@ -2,7 +2,7 @@
 
 part of 'navigation_bloc.dart';
 
-enum NavigationStatus { initial, loading, loaded, error }
+enum NavigationStatus { initial, loading, loaded, error, completed }
 
 enum GeoStatus {
   initial,

@@ -12,3 +12,5 @@ class DriverPositionChanged extends NavigationEvent {
   final Position driverPosition;
   DriverPositionChanged({required this.driverPosition});
 }
+
+class CompleteDelivery extends NavigationEvent {}

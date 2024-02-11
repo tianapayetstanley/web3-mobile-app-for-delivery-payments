@@ -33,6 +33,7 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
         super(NavigationState.initial()) {
     on<GetCurrentPosition>(_onGetCurrentPosition);
     on<DriverPositionChanged>(_onDriverPositionChanged);
+    on<CompleteDelivery>(_onCompleteDelivery);
   }
   Future<void> _onGetCurrentPosition(
     GetCurrentPosition event,
@@ -238,11 +239,24 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
           DateTime.now().millisecondsSinceEpoch,
         );
 
+        int numberOfPassedCheckpoints = state.passedCheckpoints.length;
+
         emit(state.copyWith(
             passedCheckpoints: List.from(state.passedCheckpoints)
               ..add(checkpoint)));
+        // delivery completed
+        if (numberOfPassedCheckpoints + 1 == state.checkpoints.length) {
+          add(CompleteDelivery());
+        }
       }
     }
+  }
+
+  void _onCompleteDelivery(
+    CompleteDelivery event,
+    Emitter<NavigationState> emit,
+  ) {
+    emit(state.copyWith(status: NavigationStatus.completed));
   }
 
   @override

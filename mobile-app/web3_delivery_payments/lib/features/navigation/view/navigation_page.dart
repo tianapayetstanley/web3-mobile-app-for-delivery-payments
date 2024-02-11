@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:web3_delivery_payments/common/widgets/snackbar_widget.dart';
 import 'package:web3_delivery_payments/features/navigation/bloc/navigation_bloc.dart';
 import 'package:web3_delivery_payments/features/navigation/widgets/map_widget.dart';
+import 'package:web3_delivery_payments/router.dart';
 
 class NavigationPage extends StatefulWidget {
   const NavigationPage({super.key});
@@ -30,6 +32,27 @@ class _NavigationPageState extends State<NavigationPage> {
               if (state.status == NavigationStatus.error) {
                 showSnackbar(
                     context, SnackbarType.error, state.failure.message);
+              }
+
+              if (state.status == NavigationStatus.completed) {
+                // show alert dialog
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text("Success"),
+                        content: const Text(
+                            'Delivery completed. Await for the admin to dispose the funds.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              context.goNamed(MyRouter.homeRouteName);
+                            },
+                            child: Text('Ok'),
+                          ),
+                        ],
+                      );
+                    });
               }
             },
           ),
