@@ -74,8 +74,8 @@ contract GeoLogix
 
         state = StateType.InTransit;
 
-        // find the index of a checkpoint given a timestamp and return an index
-        Checkpoint memory checkpoint = findACheckpointGivenAnId(_id);
+        // find a checkpoint given an id
+        Checkpoint memory checkpoint = checkpointsMap[_id];
        
         // check if the distance is greater than the distance of the checkpoint outlined or the timestamp is 5 minutes(300,000 milliseconds) or more after the timestamp of the checkpoint
         // commented out the timestamp code  for sake of simplicity
@@ -89,9 +89,7 @@ contract GeoLogix
         
     }
 
-    function findACheckpointGivenAnId(uint _id) internal view returns (Checkpoint memory){
-        return checkpointsMap[_id];
-    }
+    
 
 
 

@@ -48,10 +48,10 @@ export default function AddCheckpoint() {
 
       toast("Checkpoint added successfully!");
       setIsLoading(false);
-      setLatitude();
-      setLongitude();
-      setDistance();
-      setTimestamp();
+      setLatitude("");
+      setLongitude("");
+      setDistance("");
+      setTimestamp("");
     } catch (err) {
       toast(err.message);
       console.log(err.message);
