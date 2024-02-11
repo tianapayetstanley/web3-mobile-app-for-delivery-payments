@@ -31,7 +31,7 @@ class SmartContractRepository {
         await rootBundle.loadString('assets/contracts/GeoLogix.json');
     _abiCode = ContractAbi.fromJson(abiFile, 'GeoLogix');
     _contractAddress =
-        EthereumAddress.fromHex('0x901e93e567816CF6882B85Ab4a9Ec374a1Ba3969');
+        EthereumAddress.fromHex('0x4A2daBF66f5f6ec37e6c2598722Ad39Dee6762D0');
   }
 
   late EthPrivateKey _creds;
@@ -79,10 +79,9 @@ class SmartContractRepository {
     checkpointIds = checkpointIds[0];
 
     for (var i = 0; i < checkpointIds.length; i++) {
+      final id = checkpointIds[i];
       var temp = await _web3cient.call(
-          contract: _deployedContract,
-          function: _checkpointsMap,
-          params: [BigInt.from(i)]);
+          contract: _deployedContract, function: _checkpointsMap, params: [id]);
       checkpoints.add(
         Checkpoint(
           id: (temp[0] as BigInt).toInt(),
@@ -112,10 +111,11 @@ class SmartContractRepository {
     );
 
     for (var i = 0; i < complianceIds.length; i++) {
+      final complianceId = complianceIds[i];
       var temp = await _web3cient.call(
           contract: _deployedContract,
           function: _compliancesMap,
-          params: [BigInt.from(i)]);
+          params: [BigInt.from(complianceId)]);
       compliances.add(
         Checkpoint(
           id: (temp[0] as BigInt).toInt(),
@@ -128,10 +128,11 @@ class SmartContractRepository {
     }
 
     for (var i = 0; i < nonComplianceIds.length; i++) {
+      final nonComplianceId = nonComplianceIds[i];
       var temp = await _web3cient.call(
           contract: _deployedContract,
           function: _nonCompliancesMap,
-          params: [BigInt.from(i)]);
+          params: [BigInt.from(nonComplianceId)]);
       nonCompliances.add(
         Checkpoint(
           id: (temp[0] as BigInt).toInt(),
