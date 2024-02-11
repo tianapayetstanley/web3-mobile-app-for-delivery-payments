@@ -2,37 +2,23 @@
   {
     "inputs": [
       {
-        "internalType": "int256",
-        "name": "_lat",
-        "type": "int256"
+        "internalType": "address",
+        "name": "_device",
+        "type": "address"
       },
       {
-        "internalType": "int256",
-        "name": "_lng",
-        "type": "int256"
+        "internalType": "address",
+        "name": "_company",
+        "type": "address"
       },
       {
-        "internalType": "uint256",
-        "name": "_distance",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_timestamp",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "_driver",
+        "type": "address"
       }
     ],
-    "name": "addCheckpoint",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "complete",
-    "outputs": [],
     "stateMutability": "payable",
-    "type": "function"
+    "type": "constructor"
   },
   {
     "inputs": [
@@ -68,32 +54,32 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "resetEverything",
+    "inputs": [
+      {
+        "internalType": "int256",
+        "name": "_lat",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "_lng",
+        "type": "int256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_distance",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "addCheckpoint",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_device",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_company",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_driver",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "payable",
-    "type": "constructor"
   },
   {
     "inputs": [],
@@ -158,6 +144,13 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "complete",
+    "outputs": [],
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -301,6 +294,13 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "resetEverything",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

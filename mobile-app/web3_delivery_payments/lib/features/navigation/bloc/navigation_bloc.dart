@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:meta/meta.dart';
+import 'package:web3_delivery_payments/common/models/checkpoint_model.dart';
 import 'package:web3_delivery_payments/common/models/direction_model.dart';
 import 'package:web3_delivery_payments/common/models/failure_model.dart';
 import 'package:web3_delivery_payments/common/repositories/smart_contract_repository.dart';
@@ -76,6 +77,7 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
       LatLngBounds? myLatLongBounds;
       List<LatLng> myPolyPoints = [];
       Set<Polyline> myPolyLines = {};
+      List<Checkpoint> checkpoints = [];
       // if there is no error meaning location has been fetched,
       // continue to get nearby prayer places
       if (geoLocationError.isEmpty) {
@@ -95,68 +97,70 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
           ),
         );
 
-        final checkpoints = await _smartContractRepository.fetchCheckpoints();
+        checkpoints = await _smartContractRepository.fetchCheckpoints();
+        if (checkpoints.isNotEmpty) {
+          // - set the place name according to the user's locale
+          // - if no value found for the user's locale,
+          //   set the place name to english name by default
+          for (final checkpoint in checkpoints) {
+            markers.add(
+              Marker(
+                onTap: () {},
+                markerId: MarkerId(checkpoint.id.toString()),
+                position: LatLng(
+                  checkpoint.lat,
+                  checkpoint.lng,
+                ),
+                infoWindow: InfoWindow(
+                  title: 'Checkpoint ${checkpoint.id}',
+                ),
+              ),
+            );
+          }
+          final lastCheckpoint = checkpoints.last;
+          Direction direction = await _geoLocationRepository.getDirection(
+              LatLng(position.latitude, position.longitude),
+              LatLng(lastCheckpoint.lat, lastCheckpoint.lng));
 
-        // - set the place name according to the user's locale
-        // - if no value found for the user's locale,
-        //   set the place name to english name by default
-        for (final checkpoint in checkpoints) {
-          markers.add(
-            Marker(
-              onTap: () {},
-              markerId: MarkerId(checkpoint.id.toString()),
-              position: LatLng(
-                checkpoint.lat,
-                checkpoint.lng,
-              ),
-              infoWindow: InfoWindow(
-                title: 'Checkpoint ${checkpoint.id}',
-              ),
-            ),
+          for (int i = 0; i < direction.lineString.length; i++) {
+            myPolyPoints.add(
+                LatLng(direction.lineString[i][1], direction.lineString[i][0]));
+          }
+          Polyline polyline = Polyline(
+            polylineId: PolylineId("polyline"),
+            color: Colors.black,
+            width: 5,
+            jointType: JointType.round,
+            startCap: Cap.roundCap,
+            endCap: Cap.roundCap,
+            points: myPolyPoints,
+            geodesic: true,
           );
-        }
-        final lastCheckpoint = checkpoints.last;
-        Direction direction = await _geoLocationRepository.getDirection(
-            LatLng(position.latitude, position.longitude),
-            LatLng(lastCheckpoint.lat, lastCheckpoint.lng));
+          myPolyLines.add(polyline);
 
-        for (int i = 0; i < direction.lineString.length; i++) {
-          myPolyPoints.add(
-              LatLng(direction.lineString[i][1], direction.lineString[i][0]));
-        }
-        Polyline polyline = Polyline(
-          polylineId: PolylineId("polyline"),
-          color: Colors.black,
-          width: 5,
-          jointType: JointType.round,
-          startCap: Cap.roundCap,
-          endCap: Cap.roundCap,
-          points: myPolyPoints,
-          geodesic: true,
-        );
-        myPolyLines.add(polyline);
-
-        if (position.latitude > lastCheckpoint.lat &&
-            position.longitude > lastCheckpoint.lng) {
-          myLatLongBounds = LatLngBounds(
-              southwest: LatLng(lastCheckpoint.lat, lastCheckpoint.lng),
-              northeast: LatLng(position.latitude, position.longitude));
-        } else if (position.longitude > lastCheckpoint.lng) {
-          myLatLongBounds = LatLngBounds(
-              southwest: LatLng(position.latitude, lastCheckpoint.lng),
-              northeast: LatLng(lastCheckpoint.lat, position.longitude));
-        } else if (position.latitude > lastCheckpoint.lat) {
-          myLatLongBounds = LatLngBounds(
-              southwest: LatLng(lastCheckpoint.lat, position.longitude),
-              northeast: LatLng(position.latitude, lastCheckpoint.lng));
-        } else {
-          myLatLongBounds = LatLngBounds(
-              southwest: LatLng(position.latitude, position.longitude),
-              northeast: LatLng(lastCheckpoint.lat, lastCheckpoint.lng));
+          if (position.latitude > lastCheckpoint.lat &&
+              position.longitude > lastCheckpoint.lng) {
+            myLatLongBounds = LatLngBounds(
+                southwest: LatLng(lastCheckpoint.lat, lastCheckpoint.lng),
+                northeast: LatLng(position.latitude, position.longitude));
+          } else if (position.longitude > lastCheckpoint.lng) {
+            myLatLongBounds = LatLngBounds(
+                southwest: LatLng(position.latitude, lastCheckpoint.lng),
+                northeast: LatLng(lastCheckpoint.lat, position.longitude));
+          } else if (position.latitude > lastCheckpoint.lat) {
+            myLatLongBounds = LatLngBounds(
+                southwest: LatLng(lastCheckpoint.lat, position.longitude),
+                northeast: LatLng(position.latitude, lastCheckpoint.lng));
+          } else {
+            myLatLongBounds = LatLngBounds(
+                southwest: LatLng(position.latitude, position.longitude),
+                northeast: LatLng(lastCheckpoint.lat, lastCheckpoint.lng));
+          }
         }
       }
       emit(
         state.copyWith(
+          checkpoints: checkpoints,
           status: NavigationStatus.loaded,
           geoStatus: geoLocationError.isEmpty ? GeoStatus.loaded : geoStatus,
           failure: geoLocationError.isEmpty
@@ -207,6 +211,38 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
     markers.add(driverMarker);
     emit(state.copyWith(
         currentUserPosition: event.driverPosition, markers: markers));
+
+    final checkpointsNotPassed = state.checkpoints
+        .where((checkpoint) => !state.passedCheckpoints.contains(checkpoint))
+        .toList();
+
+    // check if the driver position is within the specified checkpoint distance,
+    // and if so send a call to smart contract
+    for (int i = 0; i < checkpointsNotPassed.length; i++) {
+      final checkpoint = checkpointsNotPassed[i];
+      final distanceBetweenDriverPositionAndCheckpoint =
+          _geoLocationRepository.calculateDistance(
+              initialLatitude: event.driverPosition.latitude,
+              initialLongitude: event.driverPosition.longitude,
+              finalLatitude: checkpoint.lat,
+              finalLongitude: checkpoint.lng);
+      if (distanceBetweenDriverPositionAndCheckpoint <= checkpoint.distance) {
+        // it means the driver is within the specified checkpoint distance
+        _smartContractRepository.sendTelemetry(
+          checkpoint.id,
+          int.parse(
+              (event.driverPosition.latitude * 100000).toStringAsFixed(0)),
+          int.parse(
+              (event.driverPosition.longitude * 100000).toStringAsFixed(0)),
+          distanceBetweenDriverPositionAndCheckpoint.toInt(),
+          DateTime.now().millisecondsSinceEpoch,
+        );
+
+        emit(state.copyWith(
+            passedCheckpoints: List.from(state.passedCheckpoints)
+              ..add(checkpoint)));
+      }
+    }
   }
 
   @override

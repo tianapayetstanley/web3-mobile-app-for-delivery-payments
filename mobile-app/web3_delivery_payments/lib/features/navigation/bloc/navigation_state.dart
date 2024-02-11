@@ -23,6 +23,8 @@ class NavigationState extends Equatable {
   final Set<Polyline> polyLines;
   final List<LatLng> polyPoints;
   final LatLngBounds latLngBounds;
+  final List<Checkpoint> checkpoints;
+  final List<Checkpoint> passedCheckpoints;
 
   const NavigationState({
     required this.status,
@@ -33,6 +35,8 @@ class NavigationState extends Equatable {
     required this.polyLines,
     required this.polyPoints,
     required this.latLngBounds,
+    required this.checkpoints,
+    required this.passedCheckpoints,
   });
 
   factory NavigationState.initial() {
@@ -46,6 +50,8 @@ class NavigationState extends Equatable {
       polyPoints: const [],
       latLngBounds: LatLngBounds(
           southwest: const LatLng(0, 0), northeast: const LatLng(0, 0)),
+      checkpoints: const [],
+      passedCheckpoints: const [],
     );
   }
 
@@ -59,6 +65,8 @@ class NavigationState extends Equatable {
         polyLines,
         polyPoints,
         latLngBounds,
+        checkpoints,
+        passedCheckpoints,
       ];
 
   NavigationState copyWith({
@@ -70,6 +78,8 @@ class NavigationState extends Equatable {
     Set<Polyline>? polyLines,
     List<LatLng>? polyPoints,
     LatLngBounds? latLngBounds,
+    List<Checkpoint>? checkpoints,
+    List<Checkpoint>? passedCheckpoints,
   }) {
     return NavigationState(
       status: status ?? this.status,
@@ -80,6 +90,8 @@ class NavigationState extends Equatable {
       polyLines: polyLines ?? this.polyLines,
       polyPoints: polyPoints ?? this.polyPoints,
       latLngBounds: latLngBounds ?? this.latLngBounds,
+      checkpoints: checkpoints ?? this.checkpoints,
+      passedCheckpoints: passedCheckpoints ?? this.passedCheckpoints,
     );
   }
 }

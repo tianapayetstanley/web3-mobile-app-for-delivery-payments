@@ -78,7 +78,8 @@ contract GeoLogix
         Checkpoint memory checkpoint = findACheckpointGivenAnId(_id);
        
         // check if the distance is greater than the distance of the checkpoint outlined or the timestamp is 5 minutes(300,000 milliseconds) or more after the timestamp of the checkpoint
-        if( _distance > checkpoint.distance ||  (_timestamp > checkpoint.timestamp + 300000)){
+        // commented out the timestamp code ||  (_timestamp > checkpoint.timestamp + 300000) for sake of simplicity
+        if( _distance > checkpoint.distance ){
             nonCompliancesMap[_id] = Checkpoint(_id,_lat, _lng,_distance, _timestamp);
             nonComplianceIds.push(_id);
         }else{

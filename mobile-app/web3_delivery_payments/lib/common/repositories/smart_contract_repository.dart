@@ -31,7 +31,7 @@ class SmartContractRepository {
         await rootBundle.loadString('assets/contracts/GeoLogix.json');
     _abiCode = ContractAbi.fromJson(abiFile, 'GeoLogix');
     _contractAddress =
-        EthereumAddress.fromHex('0x97f386802197484210A0acC9AB2891eDaB14431b');
+        EthereumAddress.fromHex('0x901e93e567816CF6882B85Ab4a9Ec374a1Ba3969');
   }
 
   late EthPrivateKey _creds;
@@ -88,7 +88,8 @@ class SmartContractRepository {
           id: (temp[0] as BigInt).toInt(),
           lat: ((temp[1] as BigInt).toInt() / 100000).toDouble(),
           lng: ((temp[2] as BigInt).toInt() / 100000).toDouble(),
-          timestamp: (temp[3] as BigInt).toInt(),
+          distance: (temp[3] as BigInt).toInt(),
+          timestamp: (temp[4] as BigInt).toInt(),
         ),
       );
     }
@@ -120,7 +121,8 @@ class SmartContractRepository {
           id: (temp[0] as BigInt).toInt(),
           lat: ((temp[1] as BigInt).toInt() / 100000).toDouble(),
           lng: ((temp[2] as BigInt).toInt() / 100000).toDouble(),
-          timestamp: (temp[3] as BigInt).toInt(),
+          distance: (temp[3] as BigInt).toInt(),
+          timestamp: (temp[4] as BigInt).toInt(),
         ),
       );
     }
@@ -135,7 +137,8 @@ class SmartContractRepository {
           id: (temp[0] as BigInt).toInt(),
           lat: ((temp[1] as BigInt).toInt() / 100000).toDouble(),
           lng: ((temp[2] as BigInt).toInt() / 100000).toDouble(),
-          timestamp: (temp[3] as BigInt).toInt(),
+          distance: (temp[3] as BigInt).toInt(),
+          timestamp: (temp[4] as BigInt).toInt(),
         ),
       );
     }
@@ -143,7 +146,8 @@ class SmartContractRepository {
     return [compliances, nonCompliances];
   }
 
-  Future<void> sendTelemetry(int id, int lat, int lng, int timestamp) async {
+  Future<void> sendTelemetry(
+      int id, int lat, int lng, int distance, int timestamp) async {
     await _web3cient.sendTransaction(
       _creds,
       Transaction.callContract(
@@ -153,9 +157,11 @@ class SmartContractRepository {
           BigInt.from(id),
           BigInt.from(lat),
           BigInt.from(lng),
+          BigInt.from(distance),
           BigInt.from(timestamp)
         ],
       ),
+      chainId: 11155111,
     );
   }
 }

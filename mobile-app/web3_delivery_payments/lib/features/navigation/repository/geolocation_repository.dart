@@ -54,6 +54,7 @@ class GeoLocationRepository {
 
     const LocationSettings locationSettings = LocationSettings(
       accuracy: LocationAccuracy.high,
+      distanceFilter: 50, // 50 meters
     );
     _driverPositionStream =
         Geolocator.getPositionStream(locationSettings: locationSettings)
