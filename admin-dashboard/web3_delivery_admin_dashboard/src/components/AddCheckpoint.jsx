@@ -1,144 +1,101 @@
-import {
-  CardTitle,
-  CardDescription,
-  CardHeader,
-  CardContent,
-  Card,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import contractAbi from "../assets/GeoLogix.json";
-import { ethers } from "ethers";
-import { Link } from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useJsApiLoader, GoogleMap, Marker } from '@react-google-maps/api';
+import dayjs from 'dayjs';
 
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+const containerStyle = {
+  width: '100%',
+  height: '400px',
+};
+
 export default function AddCheckpoint() {
-  const [latitude, setLatitude] = useState();
-  const [longitude, setLongitude] = useState();
-  const [distance, setDistance] = useState();
-  const [timestamp, setTimestamp] = useState();
-  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const [lat, setLat] = useState(0);
+  const [lng, setLng] = useState(0);
+  const [distance, setDistance] = useState('');
+  const [timestamp, setTimestamp] = useState(dayjs().format('YYYY-MM-DDTHH:mm'));
+  //[CN6035 EDIT] 
+  // load Google Maps API using env var VITE_GOOGLE_MAPS_API_KEY
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+  });
 
-  const handleAddCheckpoint = async (e) => {
-    e.preventDefault();
-    try {
-      setIsLoading(true);
-
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-
-      const contract = new ethers.Contract(
-        "0x4A2daBF66f5f6ec37e6c2598722Ad39Dee6762D0",
-        contractAbi,
-        signer
-      );
-
-      let addCheckpointTx = await contract.addCheckpoint(
-        Math.floor(latitude * 100000),
-        Math.floor(longitude * 100000),
-        distance,
-        timestamp
-      );
-      const receipt = await addCheckpointTx.wait();
-
-      // Log the transaction receipt
-      console.log("Transaction Receipt:", receipt);
-
-      toast("Checkpoint added successfully!");
-      setIsLoading(false);
-      setLatitude("");
-      setLongitude("");
-      setDistance("");
-      setTimestamp("");
-    } catch (err) {
-      toast(err.message);
-      console.log(err.message);
-      setIsLoading(false);
-    }
+  const handleMapClick = (event) => {
+    setLat(event.latLng.lat());
+    setLng(event.latLng.lng());
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    // invoke passed-in prop or navigate to actual add logic
+    // e.g., addCheckpoint({ lat, lng, distance, timestamp: new Date(timestamp).getTime() });
+    navigate('/');
+  };
+  //[CN6035 EDIT] 
+
   return (
-    <div className="min-h-screen p-20 text-white bg-gradient-to-r from-green-400 to-blue-500">
-      <h1 className="max-w-4xl m-auto ">
-        <Link to="/" className="text-3xl">
-          Admin Dashboard
-        </Link>
-      </h1>
-      <Card className="flex flex-col max-w-4xl m-auto mt-5">
-        <CardHeader>
-          <CardTitle className="text-xl">Add Checkpoint</CardTitle>
-          <CardDescription>Enter the details below</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label
-                className="block text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                htmlFor="latitude"
-              >
-                Latitude
-              </label>
-              <Input
-                id="latitude"
-                placeholder="0.000"
-                value={latitude}
-                onChange={(e) => setLatitude(e.target.value)}
-              />
-            </div>
-            <div>
-              <label
-                className="block text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                htmlFor="longitude"
-              >
-                Longitude
-              </label>
-              <Input
-                id="longitude"
-                placeholder="0.000"
-                value={longitude}
-                onChange={(e) => setLongitude(e.target.value)}
-              />
-            </div>
-            <div>
-              <label
-                className="block text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                htmlFor="distance"
-              >
-                Distance
-              </label>
-              <Input
-                id="distance"
-                placeholder="meters"
-                value={distance}
-                onChange={(e) => setDistance(e.target.value)}
-              />
-            </div>
-            <div>
-              <label
-                className="block text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                htmlFor="timestamp"
-              >
-                Timestamp
-              </label>
-              <Input
-                id="timestamp"
-                type="datetime-local"
-                onChange={(e) => {
-                  return setTimestamp(Date.parse(e.target.value));
-                }}
-              />
-            </div>
+    <div className="p-6 bg-white rounded-lg shadow-lg">
+      <h2 className="text-xl font-semibold mb-4">Add Checkpoint</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium">Latitude</label>
+            <Input
+              type="number" step="0.000001"
+              value={lat}
+              onChange={(e) => setLat(parseFloat(e.target.value) || 0)}
+              className="mt-1"
+            />
           </div>
-          <div className="grid gap-4 pt-4">
-            <Button size="sm" onClick={handleAddCheckpoint}>
-              {isLoading ? "Loading..." : "Add Checkpoint"}
-            </Button>
+          <div>
+            <label className="block text-sm font-medium">Longitude</label>
+            <Input
+              type="number" step="0.000001"
+              value={lng}
+              onChange={(e) => setLng(parseFloat(e.target.value) || 0)}
+              className="mt-1"
+            />
           </div>
-        </CardContent>
-      </Card>
-      <ToastContainer />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium">Distance (meters)</label>
+            <Input
+              type="number" step="1"
+              value={distance}
+              onChange={(e) => setDistance(e.target.value)}
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Timestamp</label>
+            <Input
+              type="datetime-local"
+              value={timestamp}
+              onChange={(e) => setTimestamp(e.target.value)}
+              className="mt-1"
+            />
+          </div>
+        </div>
+
+        {isLoaded && (
+          <GoogleMap
+            mapContainerStyle={containerStyle}
+            center={{ lat, lng }}
+            zoom={12}
+            onClick={handleMapClick}
+          >
+            <Marker position={{ lat, lng }} />
+          </GoogleMap>
+        )}
+
+        <Button type="submit" className="w-full bg-blue-900 text-white py-2">
+          Add Checkpoint
+        </Button>
+      </form>
     </div>
   );
 }

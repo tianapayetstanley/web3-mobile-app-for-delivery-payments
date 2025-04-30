@@ -48,6 +48,11 @@ export default function App() {
     fetchCompliances();
     fetchNonCompliances();
   }, []);
+  
+  // At the top, under your useState declarations:    whar???
+const contractAddress = "0x3D07934564C66C0f619041E6e16466796328d1"; 
+const companyAddress  = "0x86Af90deC474618DFcB911e2617B74773c3b1b39";  // your deployer address
+
 
   return (
     <div className="min-h-screen p-20 text-white bg-gradient-to-r from-green-400 to-blue-500">
